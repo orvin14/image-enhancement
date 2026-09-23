@@ -1,5 +1,8 @@
 function main_gui()
     % MAIN_GUI Aplikasi utama Pemrosesan Citra Digital berbasis MATLAB GUI.
+
+    [current_dir, ~, ~] = fileparts(mfilename('fullpath'));
+    addpath(genpath(fullfile(current_dir, '..')));
     
     % Main Window
     fig = uifigure('Name', 'IF4073 - Aplikasi Image Enhancement', ...
