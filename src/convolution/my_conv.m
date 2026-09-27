@@ -21,7 +21,7 @@ padded = padarray(inMatrix, [padH, padW], 0, "both")
 outMatrix = zeros(H, W, "like", inMatrix);
 for row = 1:H
     for col = 1:W
-        region = padded(row:row + kH - 1, col:col + kW - 1);
+        region = padded(row : (row + kH-1), col : (col + kW-1));
         % Operator .* artinya perkalian element-wise, bukan aljabar linear.
         % "all" artinya hasilnya dijumlahkan jadi 1 angka, bukan jadi
         % matriks/vektor lagi.
