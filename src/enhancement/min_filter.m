@@ -1,25 +1,28 @@
 function [outMatrix] = min_filter(inMatrix, kernelLength)
 
 arguments (Input)
-    inMatrix (:, :)
+    inMatrix (:, :, :)
     kernelLength double {mustBePositive} = 3
 end
 
 arguments (Output)
-    outMatrix (:, :)
+    outMatrix (:, :, :)
 end
 
-[H, W] = size(inMatrix);
+[H, W, C] = size(inMatrix);
 padSize = floor(kernelLength / 2);
 
 % kalau padding dengan nol jadi merusak nilai min, jadi kita replicate
-padded = padarray(inMatrix, [padSize, padSize], 'replicate', 'both');
-outMatrix = zeros(H, W, 'like', inMatrix);
+padded = padarray(inMatrix, [padSize, padSize, 0], 'replicate', 'both');
+outMatrix = zeros(H, W, C, 'like', inMatrix);
 
-for row = 1:H
-    for col = 1:W
-        region = padded(row : row + kernelLength - 1, col : col + kernelLength - 1);
-        outMatrix(row, col) = min(region(:));
+for c = 1:C
+    for row = 1:H
+        for col = 1:W
+            region = padded(row : row + kernelLength - 1, col : col + kernelLength - 1, c);
+            outMatrix(row, col, c) = min(region(:));
+        end
     end
 end
+
 end

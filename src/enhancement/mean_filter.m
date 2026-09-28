@@ -2,12 +2,12 @@ function [outMtarix] = mean_filter(inMatrix,kernelLength)
 %MEAN_FILTER Summary of this function goes here
 %   Detailed explanation goes here
 arguments (Input)
-    inMatrix (:, :)
-    kernelLength double {mustBePositive} = 3
+    inMatrix (:, :, :)
+    kernelLength (1, 1) double {mustBePositive} = 3
 end
 
 arguments (Output)
-    outMtarix
+    outMtarix (:, :, :)
 end
 
 if mod(kernelLength, 2) == 0

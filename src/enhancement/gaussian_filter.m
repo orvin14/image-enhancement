@@ -1,12 +1,12 @@
 function [outMatrix, kernel] = gaussian_filter(inMatrix, sigma)
 
 arguments (Input)
-    inMatrix (:, :)
+    inMatrix (:, :, :)
     sigma (1, 1) double {mustBePositive} = 1.0
 end
 
 arguments (Output)
-    outMatrix (:, :)
+    outMatrix (:, :, :)
     kernel (:, :)
 end
 
