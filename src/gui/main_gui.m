@@ -6,76 +6,88 @@ function main_gui()
     
     % Main Window
     fig = uifigure('Name', 'IF4073 - Aplikasi Image Enhancement', ...
-                    'Position', [50 50 1280 720]);
+        'Position', [50 50 1280 720]);
 
     % Left Panel
     pnl_control = uipanel(fig, 'Title', 'Perbaikan Citra', ...
-                           'Position', [20 20 280 680]);
+        'Position', [20 15 285 710]);
 
     % Tombol Muat Citra
     uibutton(pnl_control, 'Text', 'Muat Citra Uji', ...
-             'Position', [20 610 240 32], ...
-             'ButtonPushedFcn', @(btn, event) cb_load_image(fig));
+        'Position', [15 645 255 30], ...
+        'ButtonPushedFcn', @(btn, event) cb_load_image(fig));
 
     uibutton(pnl_control, 'Text', 'Muat Citra Referensi', ...
-             'Position', [20 570 240 32], ...
-             'ButtonPushedFcn', @(btn, event) cb_load_ref_image(fig));
+        'Position', [15 610 255 30], ...
+        'ButtonPushedFcn', @(btn, event) cb_load_ref_image(fig));
 
     % Dropdown Metode Enhancement
     uilabel(pnl_control, 'Text', 'Pilih Kategori Metode:', ...
-            'Position', [20 530 240 20]);
+        'Position', [15 580 255 18]);
     dd_category = uidropdown(pnl_control, ...
         'Items', {'Analisis / Validasi Histogram', 'Intensity Transformation', ...
-                  'Histogram Equalization', 'Histogram Matching', 'Image Filtering'}, ...
-        'Position', [20 505 240 25], ...
+            'Histogram Equalization', 'Histogram Matching', 'Image Filtering'}, ...
+        'Position', [15 555 255 24], ...
         'ValueChangedFcn', @(dd, event) cb_category_changed(fig));
 
     % Method Dropdown
     uilabel(pnl_control, 'Text', 'Pilih Teknik Spesifik:', ...
-            'Position', [20 470 240 20]);
+        'Position', [15 528 255 18]);
     dd_method = uidropdown(pnl_control, ...
         'Items', {'Validasi Histogram & Metrik Awal'}, ...
-        'Position', [20 445 240 25], ...
+        'Position', [15 503 255 24], ...
         'ValueChangedFcn', @(dd, event) cb_method_changed(fig));
 
     % Dynamic Parameter Input Panel
     pnl_params = uipanel(pnl_control, 'Title', 'Pengaturan Parameter', ...
-                         'Position', [15 315 250 120]);
+        'Position', [15 410 255 85]);
 
     % 1. Standard Numeric Parameter (Gamma, Kernel Size, Sigma, Alpha)
-    lbl_param = uilabel(pnl_params, 'Text', 'Ukuran Kernel:', ...
-                        'Position', [10 65 220 20]);
+    lbl_param = uilabel(pnl_params, 'Text', 'Ukuran Window (Ganjil):', ...
+        'Position', [10 38 235 18]);
     ef_param = uieditfield(pnl_params, 'numeric', ...
-                          'Value', 3, ...
-                          'Position', [10 40 220 24]);
+        'Value', 3, ...
+        'Position', [10 12 235 24]);
 
     % 2. Custom Kernel Matrix Input (Multi-line text area)
-    lbl_custom = uilabel(pnl_params, 'Text', 'Kernel Matrix (Tiap baris dienter):', ...
-                         'Position', [10 65 220 20], ...
-                         'Visible', 'off');
+    lbl_custom = uilabel(pnl_params, 'Text', 'Kernel Matrix (Enter per baris):', ...
+        'Position', [10 42 235 18], ...
+        'Visible', 'off');
     txt_custom = uitextarea(pnl_params, ...
-                            'Value', {'-1, 0, 1'; '-2, 0, 2'; '-1, 0, 1'}, ...
-                            'Position', [10 10 220 55], ...
-                            'Visible', 'off');
+        'Value', {'-1, 0, 1'; '-2, 0, 2'; '-1, 0, 1'}, ...
+        'Position', [10 6 235 36], ...
+        'Visible', 'off');
+
+    % Pipeline / Sequential Mode Controls
+    chk_sequential = uicheckbox(pnl_control, ...
+        'Text', 'Mode Sekuensial (Chaining)', ...
+        'Value', false, ...
+        'Position', [15 378 255 22]);
+
+    uibutton(pnl_control, 'Text', 'Reset ke Citra Asli', ...
+        'Position', [15 344 255 28], ...
+        'BackgroundColor', [0.8 0.3 0.3], ...
+        'FontColor', [1 1 1], ...
+        'ButtonPushedFcn', @(btn, event) cb_reset_image(fig));
 
     % Action Buttons
     uibutton(pnl_control, 'Text', 'Jalankan Enhancement', ...
-             'Position', [20 265 240 38], ...
-             'BackgroundColor', [0.2 0.6 0.2], ...
-             'FontColor', [1 1 1], ...
-             'FontWeight', 'bold', ...
-             'ButtonPushedFcn', @(btn, event) cb_process_image(fig));
+        'Position', [15 298 255 38], ...
+        'BackgroundColor', [0.2 0.6 0.2], ...
+        'FontColor', [1 1 1], ...
+        'FontWeight', 'bold', ...
+        'ButtonPushedFcn', @(btn, event) cb_process_image(fig));
 
     uibutton(pnl_control, 'Text', 'Simpan Citra Hasil', ...
-             'Position', [20 220 240 32], ...
-             'ButtonPushedFcn', @(btn, event) cb_save_image(fig));
+        'Position', [15 260 255 30], ...
+        'ButtonPushedFcn', @(btn, event) cb_save_image(fig));
 
     % Statistik Fitur Citra
     uilabel(pnl_control, 'Text', 'Statistik Citra (Output):', ...
-            'Position', [20 185 240 20]);
+        'Position', [15 230 255 18]);
     txt_stats = uitextarea(pnl_control, ...
-                'Position', [20 15 240 165], ...
-                'Editable', 'off');
+        'Position', [15 15 255 210], ...
+        'Editable', 'off');
 
     % Visualisasi Citra dan Histogram
     ax_in = uiaxes(fig, 'Position', [320 380 270 270]);
@@ -105,6 +117,7 @@ function main_gui()
     setappdata(fig, 'ef_param', ef_param);
     setappdata(fig, 'lbl_custom', lbl_custom);
     setappdata(fig, 'txt_custom', txt_custom);
+    setappdata(fig, 'chk_sequential', chk_sequential);
     setappdata(fig, 'txt_stats', txt_stats);
 end
 
@@ -176,7 +189,10 @@ function cb_load_image(fig)
     if isequal(file, 0), return; end
     
     img = imread(fullfile(path, file));
-    setappdata(fig, 'img_in', img);
+    % Store both original and active working image
+    setappdata(fig, 'img_orig', img);
+    setappdata(fig, 'img_current', img);
+    setappdata(fig, 'img_out', []);
     
     ax_in = getappdata(fig, 'ax_in');
     ax_hist_in = getappdata(fig, 'ax_hist_in');
@@ -208,17 +224,48 @@ function cb_load_ref_image(fig)
     display_image(ax_ref, img_ref);
 end
 
+function cb_reset_image(fig)
+    img_orig = getappdata(fig, 'img_orig');
+    if isempty(img_orig)
+        uialert(fig, 'Belum ada citra yang dimuat untuk di-reset!', 'Peringatan');
+        return;
+    end
+    setappdata(fig, 'img_current', img_orig);
+    setappdata(fig, 'img_out', []);
+    
+    ax_out = getappdata(fig, 'ax_out');
+    ax_hist_out = getappdata(fig, 'ax_hist_out');
+    txt_stats = getappdata(fig, 'txt_stats');
+    
+    cla(ax_out);
+    title(ax_out, 'Citra Hasil');
+    cla(ax_hist_out);
+    title(ax_hist_out, 'Histogram Hasil');
+    
+    stats = compute_metrics(img_orig);
+    txt_stats.Value = {
+        '--- CITRA DI-RESET KE AWAL ---';
+        sprintf('Kanal : %d', size(img_orig, 3));
+        sprintf('Min   : %s', num2str(stats.min));
+        sprintf('Max   : %s', num2str(stats.max));
+        sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
+        sprintf('StdDev: %s', num2str(round(stats.std, 2)));
+        sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
+    };
+end
+
 function cb_process_image(fig)
-    img_in = getappdata(fig, 'img_in');
-    if isempty(img_in)
+    img_current = getappdata(fig, 'img_current');
+    if isempty(img_current)
         uialert(fig, 'Silakan muat citra masukan terlebih dahulu!', 'Peringatan');
         return;
     end
     
-    dd_category = getappdata(fig, 'dd_category');
-    dd_method   = getappdata(fig, 'dd_method');
-    ef_param    = getappdata(fig, 'ef_param');
-    txt_custom  = getappdata(fig, 'txt_custom');
+    dd_category    = getappdata(fig, 'dd_category');
+    dd_method      = getappdata(fig, 'dd_method');
+    ef_param       = getappdata(fig, 'ef_param');
+    txt_custom     = getappdata(fig, 'txt_custom');
+    chk_sequential = getappdata(fig, 'chk_sequential');
     
     cat = dd_category.Value;
     method = dd_method.Value;
@@ -226,19 +273,19 @@ function cb_process_image(fig)
     
     switch cat
         case 'Analisis / Validasi Histogram'
-            img_out = img_in;
+            img_out = img_current;
             
         case 'Intensity Transformation'
             if strcmp(method, 'Contrast Stretching')
-                img_out = intensity_transform(img_in, 'contrast_stretching');
+                img_out = intensity_transform(img_current, 'contrast_stretching');
             elseif strcmp(method, 'Log Transformation')
-                img_out = intensity_transform(img_in, 'log');
+                img_out = intensity_transform(img_current, 'log');
             else
-                img_out = intensity_transform(img_in, 'gamma', param_val);
+                img_out = intensity_transform(img_current, 'gamma', param_val);
             end
             
         case 'Histogram Equalization'
-            img_out = my_histeq(img_in);
+            img_out = my_histeq(img_current);
             
         case 'Histogram Matching'
             img_ref = getappdata(fig, 'img_ref');
@@ -246,42 +293,41 @@ function cb_process_image(fig)
                 uialert(fig, 'Muat citra referensi terlebih dahulu!', 'Peringatan');
                 return;
             end
-            img_out = my_histmatch(img_in, img_ref);
+            img_out = my_histmatch(img_current, img_ref);
             
         case 'Image Filtering'
             switch method
                 case 'Mean Filter'
                     kLen = round(param_val);
                     if mod(kLen, 2) == 0, kLen = kLen + 1; end
-                    img_out = uint8(mean_filter(img_in, kLen));
+                    img_out = uint8(mean_filter(img_current, kLen));
                     
                 case 'Gaussian Filter'
-                    [res, ~] = gaussian_filter(img_in, param_val);
+                    [res, ~] = gaussian_filter(img_current, param_val);
                     img_out = uint8(res);
                     
                 case 'Sharpening Filter'
-                    res = sharpen_filter(img_in, param_val);
+                    res = sharpen_filter(img_current, param_val);
                     img_out = uint8(res);
                     
                 case 'Median Filter'
                     kLen = round(param_val);
                     if mod(kLen, 2) == 0, kLen = kLen + 1; end
-                    img_out = uint8(median_filter(img_in, kLen));
+                    img_out = uint8(median_filter(img_current, kLen));
                     
                 case 'Min Filter'
                     kLen = round(param_val);
-                    img_out = uint8(min_filter(img_in, kLen));
+                    img_out = uint8(min_filter(img_current, kLen));
                     
                 case 'Max Filter'
                     kLen = round(param_val);
-                    img_out = uint8(max_filter(img_in, kLen));
+                    img_out = uint8(max_filter(img_current, kLen));
                     
                 case 'Custom Kernel Convolution'
                     try
                         lines = txt_custom.Value;
                         if ischar(lines), lines = cellstr(lines); end
                         
-                        % Hapus baris kosong
                         lines = strtrim(lines);
                         lines = lines(~cellfun('isempty', lines));
                         
@@ -290,7 +336,6 @@ function cb_process_image(fig)
                             error('Matriks kernel tidak boleh kosong.');
                         end
                         
-                        % Parse baris pertama untuk menentukan jumlah kolom
                         firstRow = sscanf(strrep(lines{1}, ',', ' '), '%f')';
                         numCols = numel(firstRow);
                         if numCols < 1
@@ -300,11 +345,10 @@ function cb_process_image(fig)
                         user_kernel = zeros(numRows, numCols);
                         user_kernel(1, :) = firstRow;
                         
-                        % Parse baris berikutnya dan validasi keseragaman ukuran
                         for r = 2:numRows
                             rowVals = sscanf(strrep(lines{r}, ',', ' '), '%f')';
                             if numel(rowVals) ~= numCols
-                                error('Jumlah kolom pada baris %d tidak seragam (%d vs %d).', ...
+                                error('Jumlah kolom baris %d tidak konsisten (%d vs %d).', ...
                                       r, numel(rowVals), numCols);
                             end
                             user_kernel(r, :) = rowVals;
@@ -315,7 +359,7 @@ function cb_process_image(fig)
                         return;
                     end
                     
-                    res = my_conv(double(img_in), user_kernel, 'replicate');
+                    res = my_conv(double(img_current), user_kernel, 'replicate');
                     img_out = uint8(max(0, min(255, res)));
             end
     end
@@ -327,9 +371,15 @@ function cb_process_image(fig)
     ax_hist_out = getappdata(fig, 'ax_hist_out');
     
     display_image(ax_out, img_out);
+    title(ax_out, sprintf('Hasil: %s', method));
     render_histogram(ax_hist_out, img_out);
     
     % Tampilkan Statistik Fitur Citra
+    if chk_sequential.Value
+        setappdata(fig, 'img_current', img_out);
+    end
+    
+    % Hitung Metrik
     stats = compute_metrics(img_out);
     txt_stats = getappdata(fig, 'txt_stats');
     
