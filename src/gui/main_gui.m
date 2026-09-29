@@ -106,6 +106,7 @@ function main_gui()
     title(ax_hist_out, 'Histogram Hasil');
 
     % Simpan objek UI ke appdata
+    setappdata(fig, 'pnl_params', pnl_params);
     setappdata(fig, 'ax_in', ax_in);
     setappdata(fig, 'ax_out', ax_out);
     setappdata(fig, 'ax_ref', ax_ref);
@@ -119,6 +120,9 @@ function main_gui()
     setappdata(fig, 'txt_custom', txt_custom);
     setappdata(fig, 'chk_sequential', chk_sequential);
     setappdata(fig, 'txt_stats', txt_stats);
+
+    % Inisialisasi tampilan parameter berdasarkan metode default
+    cb_category_changed(fig);
 end
 
 % ---------------- CALLBACKS FUNCTIONS ----------------- 
@@ -145,6 +149,7 @@ end
 
 function cb_method_changed(fig)
     dd_method  = getappdata(fig, 'dd_method');
+    pnl_params = getappdata(fig, 'pnl_params');
     lbl_param  = getappdata(fig, 'lbl_param');
     ef_param   = getappdata(fig, 'ef_param');
     lbl_custom = getappdata(fig, 'lbl_custom');
@@ -152,35 +157,62 @@ function cb_method_changed(fig)
     
     method = dd_method.Value;
 
-    % Toggle between standard scalar parameter and custom 2D matrix box
-    if strcmp(method, 'Custom Kernel Convolution')
-        lbl_param.Visible  = 'off';
-        ef_param.Visible   = 'off';
-        lbl_custom.Visible = 'on';
-        txt_custom.Visible = 'on';
-    else
-        lbl_param.Visible  = 'on';
-        ef_param.Visible   = 'on';
-        lbl_custom.Visible = 'off';
-        txt_custom.Visible = 'off';
+    switch method
+        case 'Custom Kernel Convolution'
+            pnl_params.Visible = 'on';
+            lbl_param.Visible  = 'off';
+            ef_param.Visible   = 'off';
+            lbl_custom.Visible = 'on';
+            txt_custom.Visible = 'on';
 
-        switch method
-            case 'Gaussian Filter'
-                lbl_param.Text = 'Nilai Sigma (σ):';
-                ef_param.Value = 1.0;
-            case 'Sharpening Filter'
-                lbl_param.Text = 'Alpha (0:HPF, 1:UM, >1:Boost):';
-                ef_param.Value = 1.0;
-            case {'Mean Filter', 'Median Filter', 'Min Filter', 'Max Filter'}
-                lbl_param.Text = 'Ukuran Window (Ganjil):';
-                ef_param.Value = 3;
-            case 'Gamma Correction'
-                lbl_param.Text = 'Nilai Gamma (γ):';
-                ef_param.Value = 1.0;
-            otherwise
-                lbl_param.Text = 'Parameter (Opsional):';
-                ef_param.Value = 1.0;
-        end
+        case 'Gaussian Filter'
+            pnl_params.Visible = 'on';
+            lbl_param.Visible  = 'on';
+            ef_param.Visible   = 'on';
+            lbl_custom.Visible = 'off';
+            txt_custom.Visible = 'off';
+            lbl_param.Text     = 'Nilai Sigma (σ):';
+            ef_param.Value     = 1.0;
+
+        case 'Sharpening Filter'
+            pnl_params.Visible = 'on';
+            lbl_param.Visible  = 'on';
+            ef_param.Visible   = 'on';
+            lbl_custom.Visible = 'off';
+            txt_custom.Visible = 'off';
+            lbl_param.Text     = 'Alpha (0:HPF, 1:UM, >1:Boost):';
+            ef_param.Value     = 1.0;
+
+        case {'Mean Filter', 'Median Filter', 'Min Filter', 'Max Filter'}
+            pnl_params.Visible = 'on';
+            lbl_param.Visible  = 'on';
+            ef_param.Visible   = 'on';
+            lbl_custom.Visible = 'off';
+            txt_custom.Visible = 'off';
+            lbl_param.Text     = 'Ukuran Window (Ganjil):';
+            ef_param.Value     = 3;
+
+        case 'Gamma Correction'
+            pnl_params.Visible = 'on';
+            lbl_param.Visible  = 'on';
+            ef_param.Visible   = 'on';
+            lbl_custom.Visible = 'off';
+            txt_custom.Visible = 'off';
+            lbl_param.Text     = 'Nilai Gamma (γ):';
+            ef_param.Value     = 1.0;
+
+        otherwise
+            % Sembunyikan panel parameter untuk metode tanpa parameter:
+            % - Validasi Histogram & Metrik Awal
+            % - Contrast Stretching
+            % - Log Transformation
+            % - Histogram Equalization Standard
+            % - Histogram Specification/Matching
+            pnl_params.Visible = 'off';
+            lbl_param.Visible  = 'off';
+            ef_param.Visible   = 'off';
+            lbl_custom.Visible = 'off';
+            txt_custom.Visible = 'off';
     end
 end
 
