@@ -1,24 +1,29 @@
-function [outMatrix] = sharpen_filter(inMatrix, A)
-
-% A = 0 : High-Pass Filter (edge-detection, sum = 0, pusat = 8)
-% A = 1 : Unsharp Masking standar (kernel: sum = 1, pusat = 9)
-% A > 1 : High-Boost Filter (sum = A)
+function [outMatrix] = sharpen_filter(inMatrix, alpha, sigma)
+% SHARPEN_FILTER Penajaman dengan formula Highboost:
+% Formula: Highboost = (alpha - 1) * Original + Highpass
+%   untuk Highpass = Original - Gaussian_Blur(Original)
+% 
+%   alpha = 1.0 : Edge extraction
+%   alpha = 2.0 : Unsharp Masking
+%   alpha > 2.0 : High-Boost Filtering
 
 arguments (Input)
     inMatrix (:, :, :)
-    A (1, 1) double {mustBeNonnegative} = 1.0
+    alpha (1, 1) double {mustBeNonnegative} = 2.0
+    sigma (1, 1) double {mustBePositive} = 1.0
 end
 arguments (Output)
     outMatrix (:, :, :)
 end
 
-kernel = [-1, -1, -1; ...
-          -1, A + 8, -1; ...
-          -1, -1, -1];
+inDouble = double(inMatrix);
+lowpass  = double(gaussian_filter(inDouble, sigma));
+highpass = inDouble - lowpass;
 
-convResult = my_conv(double(inMatrix), kernel, 'replicate');
+% Highboost = (alpha - 1) * Original + Highpass
+res = (alpha - 1) * inDouble + highpass;
 
-% cap nilainya ke range [0, 255]
-outMatrix = max(0, min(255, convResult));
+% Cap nilainya ke rentang [0, 255]
+outMatrix = max(0, min(255, res));
 
 end

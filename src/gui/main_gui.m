@@ -141,7 +141,7 @@ function cb_category_changed(fig)
         case 'Histogram Matching'
             dd_method.Items = {'Histogram Specification/Matching'};
         case 'Image Filtering'
-            dd_method.Items = {'Mean Filter', 'Gaussian Filter', 'Sharpening Filter', ...
+            dd_method.Items = {'Mean Filter', 'Gaussian Filter', 'Sharpening Filter (High Boost/Unsharp Masking)', ...
                                'Median Filter', 'Min Filter', 'Max Filter', 'Custom Kernel Convolution'};
     end
     cb_method_changed(fig);
@@ -174,14 +174,14 @@ function cb_method_changed(fig)
             lbl_param.Text     = 'Nilai Sigma (σ):';
             ef_param.Value     = 1.0;
 
-        case 'Sharpening Filter'
+        case 'Sharpening Filter (High Boost/Unsharp Masking)'
             pnl_params.Visible = 'on';
             lbl_param.Visible  = 'on';
             ef_param.Visible   = 'on';
             lbl_custom.Visible = 'off';
             txt_custom.Visible = 'off';
-            lbl_param.Text     = 'Alpha (0:HPF, 1:UM, >1:Boost):';
-            ef_param.Value     = 1.0;
+            lbl_param.Text     = 'Alpha α (1: HPF, 2: UM, >2: Boost):';
+            ef_param.Value     = 2.0;
 
         case {'Mean Filter', 'Median Filter', 'Min Filter', 'Max Filter'}
             pnl_params.Visible = 'on';
@@ -340,7 +340,7 @@ function cb_process_image(fig)
                     [res, ~] = gaussian_filter(img_current, param_val);
                     img_out = uint8(res);
                     
-                case 'Sharpening Filter'
+                case 'Sharpening Filter (High Boost/Unsharp Masking)'
                     res = sharpen_filter(img_current, param_val);
                     img_out = uint8(res);
                     
