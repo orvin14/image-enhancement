@@ -9,6 +9,10 @@ arguments (Output)
     outMatrix (:, :, :)
 end
 
+if mod(kernelLength, 2) == 0
+    error('kernelLength must be an odd integer.');
+end
+
 [H, W, C] = size(inMatrix);
 padSize = floor(kernelLength / 2);
 

@@ -1,10 +1,14 @@
 function [outMatrix] = max_filter(inMatrix, kernelLength)
 arguments (Input)
     inMatrix (:, :, :)
-    kernelLength (1, 1) double = 3
+    kernelLength (1, 1) double {mustBePositive} = 3
 end
 arguments (Output)
     outMatrix (:, :, :)
+end
+
+if mod(kernelLength, 2) == 0
+    error('kernelLength must be an odd integer.');
 end
 
 [H, W, C] = size(inMatrix);

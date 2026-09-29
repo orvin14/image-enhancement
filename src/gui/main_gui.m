@@ -221,29 +221,33 @@ function cb_load_image(fig)
     figure(fig);
     if isequal(file, 0), return; end
     
-    img = imread(fullfile(path, file));
-    % Store both original and active working image
-    setappdata(fig, 'img_orig', img);
-    setappdata(fig, 'img_current', img);
-    setappdata(fig, 'img_out', []);
-    
-    ax_in = getappdata(fig, 'ax_in');
-    ax_hist_in = getappdata(fig, 'ax_hist_in');
-    txt_stats = getappdata(fig, 'txt_stats');
-    
-    display_image(ax_in, img);
-    render_histogram(ax_hist_in, img);
-    
-    stats = compute_metrics(img);
-    txt_stats.Value = {
-        '--- METRIK CITRA MASUKAN ---';
-        sprintf('Kanal : %d', size(img, 3));
-        sprintf('Min   : %s', num2str(stats.min));
-        sprintf('Max   : %s', num2str(stats.max));
-        sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
-        sprintf('StdDev: %s', num2str(round(stats.std, 2)));
-        sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
-    };
+    try
+        img = imread(fullfile(path, file));
+        % Store both original and active working image
+        setappdata(fig, 'img_orig', img);
+        setappdata(fig, 'img_current', img);
+        setappdata(fig, 'img_out', []);
+        
+        ax_in = getappdata(fig, 'ax_in');
+        ax_hist_in = getappdata(fig, 'ax_hist_in');
+        txt_stats = getappdata(fig, 'txt_stats');
+        
+        display_image(ax_in, img);
+        render_histogram(ax_hist_in, img);
+        
+        stats = compute_metrics(img);
+        txt_stats.Value = {
+            '--- METRIK CITRA MASUKAN ---';
+            sprintf('Kanal : %d', size(img, 3));
+            sprintf('Min   : %s', num2str(stats.min));
+            sprintf('Max   : %s', num2str(stats.max));
+            sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
+            sprintf('StdDev: %s', num2str(round(stats.std, 2)));
+            sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
+        };
+    catch ME
+        uialert(fig, sprintf('Gagal memuat citra:\n%s', ME.message), 'Kesalahan Berkas');
+    end
 end
 
 function cb_load_ref_image(fig)
@@ -251,11 +255,15 @@ function cb_load_ref_image(fig)
     figure(fig);
     if isequal(file, 0), return; end
     
-    img_ref = imread(fullfile(path, file));
-    setappdata(fig, 'img_ref', img_ref);
-    
-    ax_ref = getappdata(fig, 'ax_ref');
-    display_image(ax_ref, img_ref);
+    try
+        img_ref = imread(fullfile(path, file));
+        setappdata(fig, 'img_ref', img_ref);
+        
+        ax_ref = getappdata(fig, 'ax_ref');
+        display_image(ax_ref, img_ref);
+    catch ME
+        uialert(fig, sprintf('Gagal memuat citra referensi:\n%s', ME.message), 'Kesalahan Berkas');
+    end
 end
 
 function cb_reset_image(fig)
@@ -305,60 +313,64 @@ function cb_process_image(fig)
     method = dd_method.Value;
     param_val = ef_param.Value;
     
-    switch cat
-        case 'Analisis / Validasi Histogram'
-            img_out = img_current;
-            
-        case 'Intensity Transformation'
-            if strcmp(method, 'Contrast Stretching')
-                img_out = intensity_transform(img_current, 'contrast_stretching');
-            elseif strcmp(method, 'Log Transformation')
-                img_out = intensity_transform(img_current, 'log');
-            else
-                img_out = intensity_transform(img_current, 'gamma', param_val);
-            end
-            
-        case 'Histogram Equalization'
-            img_out = my_histeq(img_current);
-            
-        case 'Histogram Matching'
-            img_ref = getappdata(fig, 'img_ref');
-            if isempty(img_ref)
-                uialert(fig, 'Muat citra referensi terlebih dahulu!', 'Peringatan');
-                return;
-            end
-            img_out = my_histmatch(img_current, img_ref);
-            
-        case 'Image Filtering'
-            switch method
-                case 'Mean Filter'
-                    kLen = round(param_val);
-                    if mod(kLen, 2) == 0, kLen = kLen + 1; end
-                    img_out = uint8(mean_filter(img_current, kLen));
-                    
-                case 'Gaussian Filter'
-                    [res, ~] = gaussian_filter(img_current, param_val);
-                    img_out = uint8(res);
-                    
-                case 'Sharpening Filter (High Boost/Unsharp Masking)'
-                    res = sharpen_filter(img_current, param_val);
-                    img_out = uint8(res);
-                    
-                case 'Median Filter'
-                    kLen = round(param_val);
-                    if mod(kLen, 2) == 0, kLen = kLen + 1; end
-                    img_out = uint8(median_filter(img_current, kLen));
-                    
-                case 'Min Filter'
-                    kLen = round(param_val);
-                    img_out = uint8(min_filter(img_current, kLen));
-                    
-                case 'Max Filter'
-                    kLen = round(param_val);
-                    img_out = uint8(max_filter(img_current, kLen));
-                    
-                case 'Custom Kernel Convolution'
-                    try
+    try
+        switch cat
+            case 'Analisis / Validasi Histogram'
+                img_out = img_current;
+                
+            case 'Intensity Transformation'
+                if strcmp(method, 'Contrast Stretching')
+                    img_out = intensity_transform(img_current, 'contrast_stretching');
+                elseif strcmp(method, 'Log Transformation')
+                    img_out = intensity_transform(img_current, 'log');
+                else
+                    img_out = intensity_transform(img_current, 'gamma', param_val);
+                end
+                
+            case 'Histogram Equalization'
+                img_out = my_histeq(img_current);
+                
+            case 'Histogram Matching'
+                img_ref = getappdata(fig, 'img_ref');
+                if isempty(img_ref)
+                    uialert(fig, 'Muat citra referensi terlebih dahulu!', 'Peringatan');
+                    return;
+                end
+                if size(img_current, 3) ~= size(img_ref, 3)
+                    uialert(fig, sprintf('Jumlah kanal tidak cocok!\n- Citra masukan: %d kanal\n- Citra referensi: %d kanal\n\nPastikan kedua citra sama-sama Grayscale (1 kanal) atau sama-sama RGB (3 kanal).', ...
+                            size(img_current, 3), size(img_ref, 3)), 'Kesalahan Histogram Matching');
+                    return;
+                end
+                img_out = my_histmatch(img_current, img_ref);
+                
+            case 'Image Filtering'
+                switch method
+                    case {'Mean Filter', 'Median Filter', 'Min Filter', 'Max Filter'}
+                        if param_val < 1 || floor(param_val) ~= param_val || mod(param_val, 2) == 0
+                            uialert(fig, sprintf('Ukuran window harus berupa bilangan bulat positif GANJIL (contoh: 3, 5, 7, ...).\nNilai yang dimasukkan: %g', param_val), ...
+                                    'Ukuran Window Tidak Valid');
+                            return;
+                        end
+                        kLen = int32(param_val);
+                        if strcmp(method, 'Mean Filter')
+                            img_out = uint8(mean_filter(img_current, kLen));
+                        elseif strcmp(method, 'Median Filter')
+                            img_out = uint8(median_filter(img_current, kLen));
+                        elseif strcmp(method, 'Min Filter')
+                            img_out = uint8(min_filter(img_current, kLen));
+                        else
+                            img_out = uint8(max_filter(img_current, kLen));
+                        end
+                        
+                    case 'Gaussian Filter'
+                        [res, ~] = gaussian_filter(img_current, param_val);
+                        img_out = uint8(res);
+                        
+                    case 'Sharpening Filter (High Boost/Unsharp Masking)'
+                        res = sharpen_filter(img_current, param_val);
+                        img_out = uint8(res);
+                        
+                    case 'Custom Kernel Convolution'
                         lines = txt_custom.Value;
                         if ischar(lines), lines = cellstr(lines); end
                         
@@ -387,45 +399,43 @@ function cb_process_image(fig)
                             end
                             user_kernel(r, :) = rowVals;
                         end
-                    catch ME
-                        uialert(fig, sprintf('Format matriks kernel salah:\n%s\n\nContoh:\n-1, 0, 1\n-2, 0, 2\n-1, 0, 1', ME.message), ...
-                                'Error Kernel');
-                        return;
-                    end
-                    
-                    res = my_conv(double(img_current), user_kernel, 'replicate');
-                    img_out = uint8(max(0, min(255, res)));
-            end
+                        
+                        res = my_conv(double(img_current), user_kernel, 'replicate');
+                        img_out = uint8(max(0, min(255, res)));
+                end
+        end
+        
+        setappdata(fig, 'img_out', img_out);
+        
+        % Tampilkan Hasil Citra dan Histogram
+        ax_out = getappdata(fig, 'ax_out');
+        ax_hist_out = getappdata(fig, 'ax_hist_out');
+        
+        display_image(ax_out, img_out);
+        title(ax_out, sprintf('Hasil: %s', method));
+        render_histogram(ax_hist_out, img_out);
+        
+        % Tampilkan Statistik Fitur Citra
+        if chk_sequential.Value
+            setappdata(fig, 'img_current', img_out);
+        end
+        
+        % Hitung Metrik
+        stats = compute_metrics(img_out);
+        txt_stats = getappdata(fig, 'txt_stats');
+        
+        txt_stats.Value = {
+            sprintf('--- HASIL (%s) ---', method);
+            sprintf('Kanal : %d', size(img_out, 3));
+            sprintf('Min   : %s', num2str(stats.min));
+            sprintf('Max   : %s', num2str(stats.max));
+            sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
+            sprintf('StdDev: %s', num2str(round(stats.std, 2)));
+            sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
+        };
+    catch ME
+        uialert(fig, sprintf('Terjadi kesalahan pemrosesan:\n\n%s', ME.message), 'Kesalahan Pemrosesan');
     end
-    
-    setappdata(fig, 'img_out', img_out);
-    
-    % Tampilkan Hasil Citra dan Histogram
-    ax_out = getappdata(fig, 'ax_out');
-    ax_hist_out = getappdata(fig, 'ax_hist_out');
-    
-    display_image(ax_out, img_out);
-    title(ax_out, sprintf('Hasil: %s', method));
-    render_histogram(ax_hist_out, img_out);
-    
-    % Tampilkan Statistik Fitur Citra
-    if chk_sequential.Value
-        setappdata(fig, 'img_current', img_out);
-    end
-    
-    % Hitung Metrik
-    stats = compute_metrics(img_out);
-    txt_stats = getappdata(fig, 'txt_stats');
-    
-    txt_stats.Value = {
-        sprintf('--- HASIL (%s) ---', method);
-        sprintf('Kanal : %d', size(img_out, 3));
-        sprintf('Min   : %s', num2str(stats.min));
-        sprintf('Max   : %s', num2str(stats.max));
-        sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
-        sprintf('StdDev: %s', num2str(round(stats.std, 2)));
-        sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
-    };
 end
 
 function cb_save_image(fig)
@@ -439,13 +449,23 @@ function cb_save_image(fig)
     figure(fig);
     if isequal(file, 0), return; end
     
-    imwrite(img_out, fullfile(path, file));
+    try
+        imwrite(img_out, fullfile(path, file));
+    catch ME
+        uialert(fig, sprintf('Gagal menyimpan berkas citra:\n%s', ME.message), 'Kesalahan Penyimpanan');
+    end
 end
 
 % --------------- HELPERS FUNCTIONS ---------------- %
 
 function display_image(ax, img)
-    image(ax, img);
+    if size(img, 3) == 1
+        % Citra Grayscale (2D) perlu direplikasi ke 3 kanal agar dirender sebagai TrueColor Grayscale
+        % dan tidak terpengaruh oleh default colormap (Parula / Jet) pada uiaxes
+        image(ax, repmat(img, [1, 1, 3]));
+    else
+        image(ax, img);
+    end
     axis(ax, 'image');
     axis(ax, 'off');
 end
