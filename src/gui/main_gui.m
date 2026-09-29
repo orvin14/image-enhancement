@@ -186,6 +186,7 @@ end
 
 function cb_load_image(fig)
     [file, path] = uigetfile({'*.png;*.jpg;*.bmp;*.tif', 'Berkas Citra (*.png, *.jpg, *.bmp, *.tif)'});
+    figure(fig);
     if isequal(file, 0), return; end
     
     img = imread(fullfile(path, file));
@@ -215,6 +216,7 @@ end
 
 function cb_load_ref_image(fig)
     [file, path] = uigetfile({'*.png;*.jpg;*.bmp;*.tif', 'Berkas Citra Referensi'});
+    figure(fig);
     if isequal(file, 0), return; end
     
     img_ref = imread(fullfile(path, file));
@@ -402,6 +404,7 @@ function cb_save_image(fig)
     end
     
     [file, path] = uiputfile({'*.png', 'PNG Image'; '*.jpg', 'JPEG Image'}, 'Simpan Citra');
+    figure(fig);
     if isequal(file, 0), return; end
     
     imwrite(img_out, fullfile(path, file));
