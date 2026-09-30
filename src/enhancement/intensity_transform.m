@@ -4,6 +4,14 @@ img_out_double = zeros(size(img_double));
 [~, ~, num_channels] = size(img);
 
 switch lower(type)
+    case {'brightness'}
+        % Penyesuaian Kecerahan Linear: s = r + b
+        if nargin < 3 || isempty(param)
+            param = 0; % Nilai default penambahan kecerahan
+        end
+        bias = param;
+        img_out_double = img_double + bias;
+
     case 'contrast_stretching'
         % Pemetaan nilai intensitas dari rentang [r_min, r_max] ke [0, 255]
         for c = 1:num_channels

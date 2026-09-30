@@ -135,7 +135,7 @@ function cb_category_changed(fig)
         case 'Analisis / Validasi Histogram'
             dd_method.Items = {'Validasi Histogram & Metrik Awal'};
         case 'Intensity Transformation'
-            dd_method.Items = {'Contrast Stretching', 'Log Transformation', 'Gamma Correction'};
+            dd_method.Items = {'Brightness Adjustment (Linear)', 'Contrast Stretching', 'Log Transformation', 'Gamma Correction'};
         case 'Histogram Equalization'
             dd_method.Items = {'Histogram Equalization Standard'};
         case 'Histogram Matching'
@@ -158,6 +158,15 @@ function cb_method_changed(fig)
     method = dd_method.Value;
 
     switch method
+        case 'Brightness Adjustment (Linear)'
+            pnl_params.Visible = 'on';
+            lbl_param.Visible  = 'on';
+            ef_param.Visible   = 'on';
+            lbl_custom.Visible = 'off';
+            txt_custom.Visible = 'off';
+            lbl_param.Text     = 'Nilai Bias / Offset (-255 s.d. 255):';
+            ef_param.Value     = 30;
+
         case 'Custom Kernel Convolution'
             pnl_params.Visible = 'on';
             lbl_param.Visible  = 'off';
@@ -319,7 +328,9 @@ function cb_process_image(fig)
                 img_out = img_current;
                 
             case 'Intensity Transformation'
-                if strcmp(method, 'Contrast Stretching')
+                if strcmp(method, 'Brightness Adjustment (Linear)')
+                    img_out = intensity_transform(img_current, 'brightness', param_val);
+                elseif strcmp(method, 'Contrast Stretching')
                     img_out = intensity_transform(img_current, 'contrast_stretching');
                 elseif strcmp(method, 'Log Transformation')
                     img_out = intensity_transform(img_current, 'log');
@@ -507,16 +518,37 @@ function render_histogram(ax, img)
     counts = my_histogram(img);
     x = 0:255;
     
+    % Deteksi kecerahan background axes untuk memilih warna dengan kontras tinggi
+    bg_color = ax.Color;
+    is_dark_bg = false;
+    if isnumeric(bg_color) && numel(bg_color) == 3
+        is_dark_bg = (mean(bg_color) < 0.5);
+    end
+    
     hold(ax, 'on');
     if size(img, 3) == 3
-        plot(ax, x, counts(:, 1), 'r', 'LineWidth', 1.2);
-        plot(ax, x, counts(:, 2), 'g', 'LineWidth', 1.2);
-        plot(ax, x, counts(:, 3), 'b', 'LineWidth', 1.2);
+        % Warna kurva RGB yang cerah dan kontras tinggi
+        if is_dark_bg
+            plot(ax, x, counts(:, 1), 'Color', [1.0 0.3 0.3], 'LineWidth', 1.5); % Merah Cerah
+            plot(ax, x, counts(:, 2), 'Color', [0.3 0.9 0.3], 'LineWidth', 1.5); % Hijau Cerah
+            plot(ax, x, counts(:, 3), 'Color', [0.3 0.6 1.0], 'LineWidth', 1.5); % Biru Cerah
+        else
+            plot(ax, x, counts(:, 1), 'Color', [0.85 0.1 0.1], 'LineWidth', 1.5); % Merah Pekat
+            plot(ax, x, counts(:, 2), 'Color', [0.1 0.7 0.2], 'LineWidth', 1.5); % Hijau Pekat
+            plot(ax, x, counts(:, 3), 'Color', [0.1 0.3 0.9], 'LineWidth', 1.5); % Biru Pekat
+        end
     else
-        plot(ax, x, counts(:, 1), 'k', 'LineWidth', 1.2);
+        % Citra Grayscale: gunakan warna biru royal / cyan yang kontras tinggi (bukan hitam polos)
+        if is_dark_bg
+            gray_curve_color = [0.2 0.85 1.0]; % Cyan cerah untuk background gelap
+        else
+            gray_curve_color = [0.0 0.45 0.85]; % Royal blue untuk background terang
+        end
+        plot(ax, x, counts(:, 1), 'Color', gray_curve_color, 'LineWidth', 1.6);
     end
     hold(ax, 'off');
     
     xlim(ax, [0 255]);
     grid(ax, 'on');
+    ax.GridAlpha = 0.25;
 end
