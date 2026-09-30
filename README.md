@@ -13,7 +13,7 @@ Fitur utama aplikasi meliputi:
 
 ## 2. Dependensi & Persyaratan Sistem
 * **Perangkat Lunak:** MATLAB versi R2026a.
-* **Toolbox Tambahan:** Image Processing Toolbox. 
+* **Toolbox Tambahan:** Image Processing Toolbox, Deep Learning Toolbox, Simulink, Parallel Computing Toolbox (penulis sebenarnya tidak tahu yang mana, pokoknya ada salah satu yang diperlukan agar fungsi floorDiv bisa dipakai)
 
 ---
 
