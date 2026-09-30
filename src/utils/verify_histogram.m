@@ -37,7 +37,7 @@ report.is_valid     = is_valid;
 report.total_pixels = total_pixels;
 
 % Cetak Laporan Hasil Validasi ke Command Window
-fprintf('=== HASIL VALIDASI HISTOGRAM ===\n');
+fprintf('Hasil Validasi Histogram\n');
 fprintf('Jumlah Piksel Sesuai  : %s\n', mat2str(pixel_check));
 fprintf('Identik dengan imhist : %s\n', mat2str(exact_match));
 fprintf('Total Selisih Nilai   : %d\n', diff_val);
