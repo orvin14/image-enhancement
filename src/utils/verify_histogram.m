@@ -47,5 +47,4 @@ if is_valid
 else
     fprintf('Status                : TIDAK VALID\n');
 end
-fprintf('================================\n');
 end
