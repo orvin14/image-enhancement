@@ -1,7 +1,4 @@
 function counts = my_histogram(img)
-% MY_HISTOGRAM Menghitung histogram 256 tingkat intensitas secara manual.
-% Input : img - Citra uint8 (Grayscale 2D atau RGB 3D)
-% Output: counts - Matriks 256x1 (Grayscale) atau 256x3 (RGB)
 
 % Memeriksa dimensi citra
 [num_rows, num_cols, num_channels] = size(img);

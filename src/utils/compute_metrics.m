@@ -1,7 +1,4 @@
 function metrics = compute_metrics(img)
-% COMPUTE_METRICS Menghitung fitur dan statistik citra
-% Input : img - Citra masukan uint8 (Grayscale 2D atau RGB 3D)
-% Output: metrics - Struct berisi nilai min, max, mean, std, dan entropy
 
 img_double = double(img);
 [rows, cols, num_channels] = size(img);

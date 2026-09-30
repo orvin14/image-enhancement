@@ -1,9 +1,4 @@
 function [is_valid, diff_val, report] = verify_histogram(img)
-% VERIFY_HISTOGRAM Memvalidasi kebenaran output my_histogram terhadap imhist bawaan
-% Input : img - Citra uint8 (Grayscale atau RGB)
-% Output: is_valid - Status kebenaran (true/false)
-%         diff_val - Total akumulasi selisih nilai histogram
-%         report   - Struct berisi rincian validasi
 
 [rows, cols, num_channels] = size(img);
 total_pixels = rows * cols;
