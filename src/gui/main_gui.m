@@ -336,11 +336,6 @@ function cb_process_image(fig)
                     uialert(fig, 'Muat citra referensi terlebih dahulu!', 'Peringatan');
                     return;
                 end
-                if size(img_current, 3) ~= size(img_ref, 3)
-                    uialert(fig, sprintf('Jumlah kanal tidak cocok!\n- Citra masukan: %d kanal\n- Citra referensi: %d kanal\n\nPastikan kedua citra sama-sama Grayscale (1 kanal) atau sama-sama RGB (3 kanal).', ...
-                            size(img_current, 3), size(img_ref, 3)), 'Kesalahan Histogram Matching');
-                    return;
-                end
                 img_out = my_histmatch(img_current, img_ref);
                 
             case 'Image Filtering'
@@ -424,15 +419,52 @@ function cb_process_image(fig)
         stats = compute_metrics(img_out);
         txt_stats = getappdata(fig, 'txt_stats');
         
-        txt_stats.Value = {
-            sprintf('--- HASIL (%s) ---', method);
-            sprintf('Kanal : %d', size(img_out, 3));
-            sprintf('Min   : %s', num2str(stats.min));
-            sprintf('Max   : %s', num2str(stats.max));
-            sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
-            sprintf('StdDev: %s', num2str(round(stats.std, 2)));
-            sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
-        };
+        if strcmp(method, 'Validasi Histogram & Metrik Awal')
+            [is_valid, diff_val, report] = verify_histogram(img_out);
+            if report.pixel_check
+                px_status = 'Sesuai';
+            else
+                px_status = 'Tidak Sesuai';
+            end
+            
+            if report.exact_match
+                match_status = 'Identik (0 Deviasi)';
+            else
+                match_status = sprintf('Beda (Selisih: %d)', diff_val);
+            end
+            
+            if is_valid
+                overall_status = 'VALID (100% Akurat)';
+            else
+                overall_status = 'TIDAK VALID';
+            end
+            
+            txt_stats.Value = {
+                '--- HASIL VALIDASI HISTOGRAM ---';
+                sprintf('Total Piksel : %d', report.total_pixels);
+                sprintf('Jumlah Piksel: %s', px_status);
+                sprintf('Uji imhist   : %s', match_status);
+                sprintf('Status       : %s', overall_status);
+                '';
+                '--- METRIK AWAL CITRA ---';
+                sprintf('Kanal : %d', size(img_out, 3));
+                sprintf('Min   : %s', num2str(stats.min));
+                sprintf('Max   : %s', num2str(stats.max));
+                sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
+                sprintf('StdDev: %s', num2str(round(stats.std, 2)));
+                sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
+            };
+        else
+            txt_stats.Value = {
+                sprintf('--- HASIL (%s) ---', method);
+                sprintf('Kanal : %d', size(img_out, 3));
+                sprintf('Min   : %s', num2str(stats.min));
+                sprintf('Max   : %s', num2str(stats.max));
+                sprintf('Mean  : %s', num2str(round(stats.mean, 2)));
+                sprintf('StdDev: %s', num2str(round(stats.std, 2)));
+                sprintf('Entropy: %s', num2str(round(stats.entropy, 2)));
+            };
+        end
     catch ME
         uialert(fig, sprintf('Terjadi kesalahan pemrosesan:\n\n%s', ME.message), 'Kesalahan Pemrosesan');
     end
